@@ -155,7 +155,7 @@ const embedUrl=(type,id,s=1,e=1)=>'';
 
 const $=s=>document.querySelector(s);
 /* After deploying worker.js, paste its URL here (no trailing slash) and delete the TMDB_API_KEY line above. */
-const TMDB_PROXY='https://noir.webstr.workers.dev/';
+const TMDB_PROXY='https://noir.webstr.workers.dev';
 const api=(p,q={})=>{const o={language:'en-US',...q};if(!TMDB_PROXY)o.api_key=TMDB_API_KEY;return fetch((TMDB_PROXY||TMDB_BASE_URL)+p+'?'+new URLSearchParams(o)).then(r=>r.json()).catch(()=>({}))};
 const img=(p,s='w342')=>p?TMDB_IMAGE_BASE_URL+s+p:'';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));

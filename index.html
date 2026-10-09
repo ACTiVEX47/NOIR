@@ -158,21 +158,23 @@ const TMDB_BASE_URL='https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL='https://image.tmdb.org/t/p/';
 
 /* ▼▼ EMBED PROVIDERS — VidRift + Bingr ▼▼
-   Both providers wired for all titles. type='movie'|'tv'. For tv: s=season, e=episode.
-   VidRift docs: https://embed.vidrift.net/embed/{movie|tv}/{id}[/{s}/{e}]
-   Bingr:        https://bingr.one/embed/{movie|tv}/{id}[/{s}/{e}] */
+   Corrected Bingr endpoint to bingr.one/watch/... */
 const PROVIDERS=[['vidrift','VidRift'],['bingr','Bingr']];
 const embedUrl=(provider,type,id,s=1,e=1)=>{
-  const base=type==='movie'
-    ? `/${type}/${id}`
-    : `/${type}/${id}/${s}/${e}`;
-  if(provider==='vidrift') return `https://embed.vidrift.net/embed${base}`;
-  if(provider==='bingr')   return `https://bingr.one/embed${base}`;
+  if(provider==='vidrift'){
+    return type==='movie' 
+      ? `https://embed.vidrift.net/embed/movie/${id}` 
+      : `https://embed.vidrift.net/embed/tv/${id}/${s}/${e}`;
+  }
+  if(provider==='bingr'){
+    return type==='movie' 
+      ? `https://bingr.one/watch/movie/${id}` 
+      : `https://bingr.one/watch/tv/${id}/${s}/${e}`;
+  }
   return '';
 };
 
 const $=s=>document.querySelector(s);
-/* After deploying worker.js, paste its URL here (no trailing slash) and delete the TMDB_API_KEY line above. */
 const TMDB_PROXY='https://noir.webstr.workers.dev';
 const api=(p,q={})=>{const o={language:'en-US',...q};if(!TMDB_PROXY)o.api_key=TMDB_API_KEY;return fetch((TMDB_PROXY||TMDB_BASE_URL)+p+'?'+new URLSearchParams(o)).then(r=>r.json()).catch(()=>({}))};
 const img=(p,s='w342')=>p?TMDB_IMAGE_BASE_URL+s+p:'';
@@ -333,7 +335,7 @@ function renderWatch(){
         </div>
       </div>
       <div class="frame">
-        ${u?`<iframe src="${u}" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>`:'<div>No stream available</div>'}
+        ${u?`<iframe src="${u}" allowfullscreen allow="autoplay; fullscreen; picture-in-picture"></iframe>`:'<div>No stream available</div>'}
       </div>
       <div class="wp-info">
         ${d.poster_path?`<img class="poster" src="${img(d.poster_path,'w185')}" alt="">`:''}

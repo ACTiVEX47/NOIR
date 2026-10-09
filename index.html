@@ -117,6 +117,15 @@ select option{background:#111}
 .frame iframe{width:100%;height:100%;border:0}
 .pl .bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
 .toast{position:fixed;left:50%;bottom:calc(var(--nav) + 30px);transform:translateX(-50%);padding:10px 20px;border-radius:99px;z-index:200;font-size:14px}
+/* watch page */
+.watch-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.srv-wrap{display:flex;gap:8px;align-items:center}
+.srv-wrap span{color:var(--m);font-size:13px}
+.wp-info{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px}
+.wp-info .poster{width:120px;border-radius:14px;border:1px solid var(--gb);flex:none}
+.wp-info .body{flex:1;min-width:240px}
+.wp-info h1{font-size:clamp(22px,3.5vw,32px);font-weight:800;letter-spacing:-.03em}
+.wp-info p{color:#d0d0d8;margin-top:12px;max-width:680px}
 footer{text-align:center;color:var(--m);font-size:12px;padding:40px 20px}
 @media(max-width:760px){
 nav.top{display:none}.bnav{display:flex}
@@ -127,6 +136,7 @@ header{padding:0 8px 0 18px;gap:10px}.search{width:100%}.logo{font-size:14px}
 .modal{padding:0;align-items:flex-end}.box{border-radius:28px 28px 0 0;max-height:94%}
 .dt{flex-direction:column;padding:0 18px 20px;gap:14px}.dt .po{width:120px}.sub{padding:0 18px 20px}.bd{margin-bottom:-70px;height:240px}
 .btn{padding:12px 20px}
+.wp-info .poster{width:90px}
 }
 @media(hover:none){.card:hover{transform:none}}
 </style>
@@ -144,14 +154,22 @@ header{padding:0 8px 0 18px;gap:10px}.search{width:100%}.logo{font-size:14px}
 <div class="modal" id="pmodal"><div class="pl" id="pbox"></div></div>
 
 <script>
-
 const TMDB_BASE_URL='https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL='https://image.tmdb.org/t/p/';
 
-/* ▼▼ PUT YOUR EMBED PROVIDER HERE ▼▼
-   Return the iframe URL. type = 'movie' | 'tv'. For tv, s = season, e = episode.
-   Example: return type==='movie' ? `https://YOUR-PROVIDER/movie/${id}` : `https://YOUR-PROVIDER/tv/${id}/${s}/${e}`; */
-const embedUrl=(type,id,s=1,e=1)=>'';
+/* ▼▼ EMBED PROVIDERS — VidRift + Bingr ▼▼
+   Both providers wired for all titles. type='movie'|'tv'. For tv: s=season, e=episode.
+   VidRift docs: https://embed.vidrift.net/embed/{movie|tv}/{id}[/{s}/{e}]
+   Bingr:        https://bingr.net/embed/{movie|tv}/{id}[/{s}/{e}] */
+const PROVIDERS=[['vidrift','VidRift'],['bingr','Bingr']];
+const embedUrl=(provider,type,id,s=1,e=1)=>{
+  const base=type==='movie'
+    ? `/${type}/${id}`
+    : `/${type}/${id}/${s}/${e}`;
+  if(provider==='vidrift') return `https://embed.vidrift.net/embed${base}`;
+  if(provider==='bingr')   return `https://bingr.net/embed${base}`;
+  return '';
+};
 
 const $=s=>document.querySelector(s);
 /* After deploying worker.js, paste its URL here (no trailing slash) and delete the TMDB_API_KEY line above. */
@@ -172,8 +190,8 @@ const mk=x=>({id:x.id,media_type:x.t,title:x.title,poster_path:x.poster_path,vot
 const cwRow=()=>cw().length?rowHTML('▶ Continue Watching',cw().map(mk),'movie'):'';
 function mylist(){const l=wl();$('#app').innerHTML=`<div class="wrap pad"><h1 class="pt">My List</h1>${l.length?`<div class="grid">${l.map(x=>card(mk(x))).join('')}</div>`:'<div class="empty">Your list is empty. Tap “＋ My List” on any title.</div>'}</div>`}
 const NAV=[['home','Home','<path d="M3 11 12 3l9 8v10h-6v-6H9v6H3z"/>'],['movie','Movies','<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 4v16M16 4v16M3 12h18"/>'],['tv','Series','<rect x="2" y="5" width="20" height="13" rx="2"/><path d="M8 21h8"/>'],['fran','Franchises','<path d="M12 3 3 8l9 5 9-5zM3 13l9 5 9-5"/>'],['list','My List','<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/>']];
-$('#tn').innerHTML=NAV.map(n=>`<button data-v="${n[0]}">${n[1]}</button>`).join('');
-$('#bn').innerHTML=NAV.map(n=>`<button data-v="${n[0]}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${n[2]}</svg>${n[1]}</button>`).join('');
+ $('#tn').innerHTML=NAV.map(n=>`<button data-v="${n[0]}">${n[1]}</button>`).join('');
+ $('#bn').innerHTML=NAV.map(n=>`<button data-v="${n[0]}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${n[2]}</svg>${n[1]}</button>`).join('');
 document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>go(b.dataset.v));
 
 const FRANCHISES=[10,1241,119,86311,645,9485,404609,263,328,87359,10194,2344,295,131635,531241,8945,2150,86066,748,84,1709,2980,115570,8091,556,33514,448150,94602];
@@ -241,7 +259,7 @@ async function fill(){
   B.busy=0;requestAnimationFrame(()=>{const e=$('#sen');if(e&&!B.end&&e.getBoundingClientRect().top<innerHeight+900)fill()});
 }
 let st;
-$('#q').addEventListener('input',e=>{clearTimeout(st);const v=e.target.value.trim();if(!v)return go('home');st=setTimeout(()=>search(v),380)});
+ $('#q').addEventListener('input',e=>{clearTimeout(st);const v=e.target.value.trim();if(!v)return go('home');st=setTimeout(()=>search(v),380)});
 async function search(v){
   clearInterval(heroTimer);setNav('');
   $('#app').innerHTML=`<div class="wrap pad"><h1 class="pt">Results for “${esc(v)}”</h1><div class="grid">${skel(8)}</div></div>`;
@@ -281,13 +299,95 @@ async function seasons(id,ss){
   const load=async n=>{const d=await api(`/tv/${id}/season/${n}`);$('#eps').innerHTML=(d.episodes||[]).map(e=>`<button class="ep glass" data-play="tv:${id}:${n}:${e.episode_number}">${e.still_path?`<img loading="lazy" src="${img(e.still_path,'w300')}" alt="">`:'<div class="ph"></div>'}<div><b>${e.episode_number}. ${esc(e.name)}</b><small>${e.runtime?e.runtime+' min':''}</small></div></button>`).join('')};
   $('#ss').onchange=e=>load(e.target.value);load(ss[0].season_number);
 }
-async function play(type,id,s=1,e=1){
-  const m=CUR&&CUR.id==id&&CUR.t===type?CUR:await api('/'+type+'/'+id).then(d=>({t:type,id:+id,title:d.title||d.name,poster_path:d.poster_path,vote_average:d.vote_average,date:d.release_date||d.first_air_date}));
-  saveCw({...m,s:+s,e:+e});
-  const u=embedUrl(type,id,s,e);
-  $('#pbox').innerHTML=`<div class="bar"><b>${type==='tv'?`S${s} · E${e}`:'Now playing'}</b><button class="x glass" style="position:static;margin:0;float:none" onclick="closeAll()">✕</button></div><div class="frame">${u?`<iframe src="${u}" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>`:`<div>No stream connected yet.<br><small>Add your provider in <code>embedUrl()</code> in the script.<br>${type} · TMDB id ${id}${type==='tv'?` · S${s}E${e}`:''}</small></div>`}</div>`;
-  open($('#pmodal'));
+
+/* ───────────── separate WATCH PAGE ───────────── */
+let WP=null;
+async function watch(type,id,s=1,e=1){
+  closeAll();
+  clearInterval(heroTimer);
+  setNav('');
+  io&&io.disconnect();
+  scrollTo({top:0});
+  const d=await api(`/${type}/${id}`,{append_to_response:'videos,credits,similar'});
+  const n=d.title||d.name;
+  CUR={t:type,id:+id,title:n,poster_path:d.poster_path,vote_average:d.vote_average,date:d.release_date||d.first_air_date};
+  WP={type,id:+id,s:+s,e:+e,server:LS.get('srv','vidrift'),d};
+  saveCw({...CUR,s:+s,e:+e});
+  renderWatch();
 }
+function renderWatch(){
+  if(!WP)return;
+  const {type,id,s,e,server,d}=WP;
+  const u=embedUrl(server,type,id,s,e);
+  const ss=(d.seasons||[]).filter(x=>x.season_number>0);
+  const isTv=type==='tv'&&ss.length;
+  $('#app').innerHTML=`
+    <div class="wrap" style="padding-top:90px">
+      <div class="watch-bar">
+        <button class="btn g" onclick="go('home')">← Back</button>
+        <div class="srv-wrap">
+          <span>Server</span>
+          <div class="tog glass" id="srvt">
+            ${PROVIDERS.map(p=>`<button data-srv="${p[0]}" class="${server===p[0]?'on':''}">${p[1]}</button>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="frame">
+        ${u?`<iframe src="${u}" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>`:'<div>No stream available</div>'}
+      </div>
+      <div class="wp-info">
+        ${d.poster_path?`<img class="poster" src="${img(d.poster_path,'w185')}" alt="">`:''}
+        <div class="body">
+          <h1>${esc(d.title||d.name)}</h1>
+          <div class="meta" style="margin-top:6px">
+            <span class="pill glass">★ ${(d.vote_average||0).toFixed(1)}</span>
+            <span>${yr(d.release_date||d.first_air_date)}</span>
+            ${d.runtime?`<span>${d.runtime} min</span>`:''}
+            ${d.number_of_seasons?`<span>${d.number_of_seasons} seasons</span>`:''}
+            ${type==='tv'?`<span>S${s} · E${e}</span>`:''}
+          </div>
+          <div class="meta" style="margin-top:8px">${(d.genres||[]).map(g=>`<span class="pill glass">${g.name}</span>`).join('')}</div>
+          <p>${esc(d.overview)}</p>
+          <div class="btns" style="margin-top:14px">
+            <button class="btn g" data-wl="${type}:${id}">${inWl(type,id)?'✓ In My List':'＋ My List'}</button>
+          </div>
+        </div>
+      </div>
+      ${isTv?`
+        <section style="margin-top:30px">
+          <div class="sh"><h2>Episodes</h2></div>
+          <select id="wss">${ss.map(x=>`<option value="${x.season_number}" ${x.season_number==s?'selected':''}>Season ${x.season_number}</option>`).join('')}</select>
+          <div class="eps" id="weps"></div>
+        </section>
+      `:''}
+      ${(d.similar?.results||[]).length?`
+        <section style="margin-top:30px">
+          <div class="sh"><h2>More Like This</h2></div>
+          <div class="row" style="padding-left:0;margin:0">${d.similar.results.slice(0,14).map(i=>card(i,type)).join('')}</div>
+        </section>
+      `:''}
+    </div>
+  `;
+  $('#srvt').onclick=ev=>{const b=ev.target.closest('[data-srv]');if(!b)return;WP.server=b.dataset.srv;LS.set('srv',WP.server);renderWatch();scrollTo({top:0})};
+  if(isTv){
+    const loadEps=async sn=>{
+      const sd=await api(`/tv/${id}/season/${sn}`);
+      $('#weps').innerHTML=(sd.episodes||[]).map(ep=>`
+        <button class="ep glass" onclick="watchEp(${sn},${ep.episode_number})">
+          ${ep.still_path?`<img loading="lazy" src="${img(ep.still_path,'w300')}" alt="">`:'<div class="ph"></div>'}
+          <div><b>${ep.episode_number}. ${esc(ep.name)}</b><small>${ep.runtime?ep.runtime+' min':''}</small></div>
+        </button>
+      `).join('');
+    };
+    $('#wss').onchange=ev=>loadEps(+ev.target.value);
+    loadEps(+s);
+  }
+}
+function watchEp(s,e){WP.s=+s;WP.e=+e;saveCw({...CUR,s:+s,e:+e});renderWatch();scrollTo({top:0})}
+
+/* play() now opens the dedicated watch page (instead of modal) */
+async function play(type,id,s=1,e=1){return watch(type,id,s,e)}
+
 async function person(id){
   open($('#modal'));$('#box').innerHTML='<div style="height:60vh"></div>';
   const p=await api('/person/'+id,{append_to_response:'combined_credits'}),seen=new Set();

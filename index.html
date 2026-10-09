@@ -160,14 +160,14 @@ const TMDB_IMAGE_BASE_URL='https://image.tmdb.org/t/p/';
 /* ▼▼ EMBED PROVIDERS — VidRift + Bingr ▼▼
    Both providers wired for all titles. type='movie'|'tv'. For tv: s=season, e=episode.
    VidRift docs: https://embed.vidrift.net/embed/{movie|tv}/{id}[/{s}/{e}]
-   Bingr:        https://bingr.net/embed/{movie|tv}/{id}[/{s}/{e}] */
+   Bingr:        https://bingr.one/embed/{movie|tv}/{id}[/{s}/{e}] */
 const PROVIDERS=[['vidrift','VidRift'],['bingr','Bingr']];
 const embedUrl=(provider,type,id,s=1,e=1)=>{
   const base=type==='movie'
     ? `/${type}/${id}`
     : `/${type}/${id}/${s}/${e}`;
   if(provider==='vidrift') return `https://embed.vidrift.net/embed${base}`;
-  if(provider==='bingr')   return `https://bingr.net/embed${base}`;
+  if(provider==='bingr')   return `https://bingr.one/embed${base}`;
   return '';
 };
 
